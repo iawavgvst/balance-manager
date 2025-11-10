@@ -4,17 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
+    protected $table = 'transactions';
+
     protected $fillable = [
         'user_id',
         'type',
         'amount',
         'comment',
         'related_user_id'
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
     ];
 
     public function user(): BelongsTo {
