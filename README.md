@@ -1,59 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Баланс-менеджер пользователей
 
-## About Laravel
+Данный проект разработан с использованием Laravel 12 и PHP 8.4. Он представляет собой приложение, которое позволяет управлять балансом пользователей: 
+— зачислять средства, 
+— списывать средства, 
+— переводить деньги между пользователями, 
+— получать текущий баланс.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Основные функции
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Начисление средств пользователю**
+   - **Метод:** POST /api/deposit
+   - **Тело запроса:**
+   json
+     {
+       "user_id": 1,
+       "amount": 500.00,
+       "comment": "Пополнение через карту"
+     }
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. **Списание средств**
+   - **Метод:** POST /api/withdraw
+   - **Тело запроса:**
+   json
+     {
+       "user_id": 1,
+       "amount": 200.00,
+       "comment": "Покупка подписки"
+     }
+   - **Примечание:** Баланс не может уходить в минус.
 
-## Learning Laravel
+3. **Перевод между пользователями**
+   - **Метод:** POST /api/transfer
+   - **Тело запроса:**
+   json
+     {
+       "from_user_id": 1,
+       "to_user_id": 2,
+       "amount": 150.00,
+       "comment": "Перевод другу"
+     }
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+4. **Получение баланса пользователя**
+   - **Метод:** GET /api/balance/{user_id}
+   - **Ответ:**
+   json
+     {
+       "user_id": 1,
+       "balance": 350.00
+     }
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Ответы и ошибки
 
-## Laravel Sponsors
+Все ответы API возвращаются с соответствующими HTTP-кодами:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- 200 — успешный ответ.
+- 400 / 422 — ошибки валидации.
+- 404 — пользователь не найден.
+- 409 — конфликт (например, недостаточно средств).
 
-### Premium Partners
+## Установка и запуск
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. Клонируйте репозиторий: git clone https://github.com/iawavgvst/balance-manager.git --> cd balance-manager.
+2. Создайте файл .env на основе .env.example: cp .env.example .env.
+3. Настройте параметры подключения к базе данных в файле .env.
+4. Для запуска проекта использовался Docker (Docker-compose) - прописаны файлы конфигурации для nginx, docker-compose.yml, и Dockerfile, которые обеспечивают подключение к базе данных, работу веб-сервера и обработку запросов через php-fpm. 
 
-## Contributing
+Необходимо выполнить в терминале следующие команды для запуска проекта в контейнерах:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- cd docker_b - войти в директорию проекта,
+- docker-compose up -d - поднять контейнеры. 
 
-## Code of Conduct
+Подключение осуществляется через localhost:8075.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. Установите зависимости Composer: docker-compose exec php-fpm composer install.
+6. Выполните миграции базы данных:
 
-## Security Vulnerabilities
+- cd docker_b,
+- docker-compose exec php-fpm bash,
+- php artisan migrate,
+- (были использованы фабрика и сидер, следовательно) php artisan db:seed.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Остановка Docker
 
-## License
+Чтобы остановить контейнеры, используйте команду:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- docker-compose down
+
+## Тестирование API
+
+Вы можете использовать инструменты, такие как Postman или cURL, для взаимодействия с API. Все запросы возвращают данные в формате JSON.
+Тесты используемых методов можно запустить с помощью следующих команд:
+
+- cd docker_b,
+- docker-compose exec php-fpm bash,
+- php artisan test.
+
+## Инструменты и документация
+
+Для достижения высокой эффективности и качества работы с Laravel были задействованы следующие инструменты:
+
+- Artisan (инструмент командной строки) - Laravel Artisan Documentation,
+- Eloquent (ORM для работы с базой данных) - Laravel Eloquent ORM Documentation,
+- Routing (маршрутизация) - Laravel Routing Documentation,
+- Migrations (управление схемами базы данных) - Laravel Migrations Documentation,
+- Validation (проверка входящих данных на соответствие заданным правилам) - Laravel Validation Documentation.
