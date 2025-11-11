@@ -10,6 +10,10 @@ use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @method method(string $string)
+ */
+
 class BalanceService
 {
     private LoggerInterface $logger;
